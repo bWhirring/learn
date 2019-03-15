@@ -1,6 +1,11 @@
 interface Token {
   type: string;
-  value: string;
+  value?: string;
+}
+
+interface Inode extends Token {
+  name?: string,
+  params?: Array<{}>
 }
 
 class AST {
@@ -66,7 +71,7 @@ class AST {
           value += char;
           char = input[++current];
         }
-        tokens.push({ type: "name", value });
+        tokens.push({ type: "identifier", value });
 
         continue;
       } else {
@@ -76,10 +81,92 @@ class AST {
     return tokens;
   }
 
+  parse(tokens: Token []) {
+    let current = 0;
+    let ast = {
+      type: "Program",
+      body: []
+    }
+
+    function nextToken() {
+      let token = tokens[current];
+      let node: Inode
+
+      if (token.type === "number") {
+        node = {
+          type: "NumberIdentifier",
+          value: token.value
+        }
+      }
+
+      if (token.type === "identifier") {
+        switch(token.value) {
+          case "function":
+            node = {
+              type: "FunctionStatement",
+              value: token.value
+            }
+            break;
+          case "if":
+            node = {
+              type: "IfStatement",
+              value: token.value
+            }
+            break;
+          case "return":
+            node = {
+              type: "ReturnStatement",
+              value: token.value
+            }
+            break;
+          default:
+            node = {
+              type: "Identifier",
+              value: token.value
+            }
+            break;
+        }
+
+      }
+
+      if (token.type === "parent" && token.value === "(") {
+        ast.body.pop();
+        token = tokens[current - 1]
+        node = {
+          type: "CallExpression",
+          name: token.value,
+          params: []
+        }
+        token = tokens[++current];
+        while (
+          (token.type !== 'parent') ||
+          (token.type === 'parent' && token.value !== ')')
+        ) {
+          node.params.push(nextToken());
+          token = tokens[current];
+        }
+
+      }
+
+      current++;
+      return node;
+    }
+
+    while(current < tokens.length) {
+      ast.body.push(nextToken())
+    }
+
+    return ast;
+  }
+
 }
 
 const ast = new AST();
 const tokenzier = ast.tokenizer(`function add(a,b) {
-  return a + b
+  return a + b + 1
 }`);
 console.log(tokenzier);
+
+const test = ast.parse(tokenzier);
+
+console.log(test);
