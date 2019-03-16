@@ -3,9 +3,10 @@ var AST = /** @class */ (function () {
         this.WHITESPACE = /s/;
         this.NUMBERS = /[0-9]/;
         this.LETTERS = /[a-z\$\_]/i;
+        this.OPERATOR = "+-*/";
     }
     AST.prototype.tokenizer = function (input) {
-        var _a = this, WHITESPACE = _a.WHITESPACE, NUMBERS = _a.NUMBERS, LETTERS = _a.LETTERS;
+        var _a = this, WHITESPACE = _a.WHITESPACE, NUMBERS = _a.NUMBERS, LETTERS = _a.LETTERS, OPERATOR = _a.OPERATOR;
         var current = 0; //  code position
         var tokens = []; // 存放token地方
         while (current < input.length) {
@@ -41,6 +42,13 @@ var AST = /** @class */ (function () {
                 });
                 current++;
                 continue;
+            }
+            else if (OPERATOR.includes(char)) {
+                current++;
+                tokens.push({
+                    type: "operator",
+                    value: char
+                });
             }
             else if (WHITESPACE.test(char)) {
                 current++;
@@ -94,6 +102,13 @@ var AST = /** @class */ (function () {
                 current++;
                 return {
                     type: "NumberIdentifier",
+                    value: token.value
+                };
+            }
+            if (token.type === "operator") {
+                current++;
+                return {
+                    type: "Operator",
                     value: token.value
                 };
             }
@@ -160,7 +175,7 @@ var AST = /** @class */ (function () {
     };
     AST.prototype.traverser = function (ast) {
         var i = 0;
-        var curAst = ast[i] || { type: "eof" };
+        var curAst = ast[i];
         function nextStatement() {
             if (curAst.type === "FunctionStatement") {
                 var statement = {
@@ -215,6 +230,12 @@ var AST = /** @class */ (function () {
                     value: curAst.value
                 };
             }
+            if (curAst.type === "Operator") {
+                return {
+                    type: "Operator",
+                    value: curAst.value
+                };
+            }
         }
         var newAst = {
             type: "Program",
@@ -233,10 +254,47 @@ var AST = /** @class */ (function () {
     AST.prototype.transform = function (ast) {
         return this.traverser(ast.body);
     };
+    AST.prototype.generator = function (ast) {
+        var code = "";
+        function generatorCode(node) {
+            switch (node.type) {
+                case "Program":
+                    code = "";
+                    node.body.map(generatorCode);
+                    break;
+                case "FunctionStatement":
+                    code += "function ";
+                    node.body.map(generatorCode);
+                    break;
+                case "CallExpression":
+                    code += node.name;
+                    var params_1 = [];
+                    node.argument.map(function (v) { return params_1.push(v.value); });
+                    code += "(" + params_1.join(", ") + ")";
+                    node.body.map(generatorCode);
+                    // this.generator(ast);
+                    code += " \n }";
+                    break;
+                case "ReturnStatement":
+                    code += "{ \n return ";
+                    node.body.map(generatorCode);
+                case "Identifier":
+                case "NumberIdentifier":
+                    code += node.value || "";
+                    break;
+                case "Operator":
+                    code += " " + node.value + " ";
+            }
+        }
+        generatorCode(ast);
+        return code;
+    };
     return AST;
 }());
 var ast = new AST();
 var tokenzier = ast.tokenizer("function add(a,b) {\n  return a + b + 1\n}");
-var test = ast.parse(tokenzier);
-var newAst = ast.transform(test);
+var token = ast.parse(tokenzier);
+var newAst = ast.transform(token);
+var init = ast.generator(newAst);
+console.log(init);
 //# sourceMappingURL=index.js.map

@@ -17,9 +17,10 @@ class AST {
   private WHITESPACE: RegExp = /s/;
   private NUMBERS: RegExp = /[0-9]/;
   private LETTERS: RegExp = /[a-z\$\_]/i;
+  private OPERATOR: string = "+-*/";
 
   tokenizer(input: string) {
-    const { WHITESPACE, NUMBERS, LETTERS } = this;
+    const { WHITESPACE, NUMBERS, LETTERS, OPERATOR } = this;
 
     let current = 0; //  code position
 
@@ -57,6 +58,12 @@ class AST {
         current++;
 
         continue;
+      } else if (OPERATOR.includes(char)) {
+        current++;
+        tokens.push({
+          type: "operator",
+          value: char
+        });
       } else if (WHITESPACE.test(char)) {
         current++;
         continue;
@@ -115,6 +122,13 @@ class AST {
         current++;
         return {
           type: "NumberIdentifier",
+          value: token.value
+        };
+      }
+      if (token.type === "operator") {
+        current++;
+        return {
+          type: "Operator",
           value: token.value
         };
       }
@@ -190,7 +204,7 @@ class AST {
 
   traverser(ast: Inode[]) {
     let i = 0;
-    let curAst = ast[i] || { type: "eof" };
+    let curAst = ast[i];
 
     function nextStatement() {
       if (curAst.type === "FunctionStatement") {
@@ -249,6 +263,13 @@ class AST {
           value: curAst.value
         };
       }
+
+      if (curAst.type === "Operator") {
+        return {
+          type: "Operator",
+          value: curAst.value
+        };
+      }
     }
 
     const newAst = {
@@ -270,6 +291,43 @@ class AST {
   transform(ast: Iast) {
     return this.traverser(ast.body);
   }
+
+  generator(ast) {
+    let code = "";
+    function generatorCode(node) {
+      switch (node.type) {
+        case "Program":
+          code = "";
+          node.body.map(generatorCode);
+          break;
+        case "FunctionStatement":
+          code += "function ";
+          node.body.map(generatorCode);
+          break;
+        case "CallExpression":
+          code += node.name;
+          const params = [];
+          node.argument.map(v => params.push(v.value));
+          code += `(${params.join(", ")})`;
+          node.body.map(generatorCode);
+          // this.generator(ast);
+          code += " \n }";
+          break;
+        case "ReturnStatement":
+          code += "{ \n return ";
+          node.body.map(generatorCode);
+        case "Identifier":
+        case "NumberIdentifier":
+          code += node.value || "";
+          break;
+        case "Operator":
+          code += ` ${node.value} `;
+      }
+    }
+
+    generatorCode(ast);
+    return code;
+  }
 }
 
 const ast = new AST();
@@ -277,5 +335,8 @@ const tokenzier = ast.tokenizer(`function add(a,b) {
   return a + b + 1
 }`);
 
-const test = ast.parse(tokenzier);
-const newAst = ast.transform(test);
+const token = ast.parse(tokenzier);
+const newAst = ast.transform(token);
+
+const init = ast.generator(newAst);
+console.log(init);

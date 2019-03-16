@@ -14,6 +14,7 @@ declare class AST {
     private WHITESPACE;
     private NUMBERS;
     private LETTERS;
+    private OPERATOR;
     tokenizer(input: string): Token[];
     parse(tokens: Token[]): {
         type: string;
@@ -27,10 +28,11 @@ declare class AST {
         type: string;
         body: any[];
     };
+    generator(ast: any): string;
 }
 declare const ast: AST;
 declare const tokenzier: Token[];
-declare const test: {
+declare const token: {
     type: string;
     body: any[];
 };
@@ -38,3 +40,4 @@ declare const newAst: {
     type: string;
     body: any[];
 };
+declare const init: string;
