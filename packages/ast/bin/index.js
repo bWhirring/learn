@@ -10,7 +10,23 @@ var AST = /** @class */ (function () {
         var tokens = []; // 存放token地方
         while (current < input.length) {
             var char = input[current]; // 当前code
-            if (char === "(") {
+            if (char === "{") {
+                tokens.push({
+                    type: "brack",
+                    value: "{"
+                });
+                current++;
+                continue;
+            }
+            else if (char === "}") {
+                tokens.push({
+                    type: "brack",
+                    value: "}"
+                });
+                current++;
+                continue;
+            }
+            else if (char === "(") {
                 tokens.push({
                     type: "parent",
                     value: "("
@@ -72,10 +88,11 @@ var AST = /** @class */ (function () {
             body: []
         };
         function nextToken() {
-            var token = tokens[current];
+            var token = tokens[current] || { type: "eof" };
             var node;
             if (token.type === "number") {
-                node = {
+                current++;
+                return {
                     type: "NumberIdentifier",
                     value: token.value
                 };
@@ -108,17 +125,27 @@ var AST = /** @class */ (function () {
                         break;
                 }
             }
+            if (token.type === "brack") {
+                node = {
+                    type: "BlockStatement",
+                    value: token.value
+                };
+            }
             if (token.type === "parent" && token.value === "(") {
                 ast.body.pop();
                 token = tokens[current - 1];
                 node = {
                     type: "CallExpression",
                     name: token.value,
-                    params: []
+                    params: [],
+                    body: {
+                        type: "BlockStatement",
+                        body: []
+                    }
                 };
                 token = tokens[++current];
-                while ((token.type !== 'parent') ||
-                    (token.type === 'parent' && token.value !== ')')) {
+                while (token.type !== "parent" ||
+                    (token.type === "parent" && token.value !== ")")) {
                     node.params.push(nextToken());
                     token = tokens[current];
                 }
@@ -131,11 +158,85 @@ var AST = /** @class */ (function () {
         }
         return ast;
     };
+    AST.prototype.traverser = function (ast) {
+        var i = 0;
+        var curAst = ast[i] || { type: "eof" };
+        function nextStatement() {
+            if (curAst.type === "FunctionStatement") {
+                var statement = {
+                    type: "FunctionStatement",
+                    body: []
+                };
+                curAst = ast[++i];
+                statement.body.push(nextStatement());
+                return statement;
+            }
+            if (curAst.type === "CallExpression") {
+                var express = {
+                    type: "CallExpression",
+                    name: curAst.name,
+                    argument: curAst.params,
+                    body: []
+                };
+                curAst = ast[++i];
+                express.body.push(nextStatement());
+                return express;
+            }
+            if (curAst.type === "BlockStatement" && curAst.value === "{") {
+                var block = {
+                    type: "ReturnStatement",
+                    body: []
+                };
+                while (i < ast.length) {
+                    curAst = ast[++i];
+                    if (curAst.type === "BlockStatement" && curAst.value === "}") {
+                        ++i;
+                        break;
+                    }
+                    var statement = nextStatement();
+                    if (statement) {
+                        block.body.push(nextStatement());
+                    }
+                }
+                return block;
+            }
+            if (curAst.type === "ReturnStatement") {
+                return;
+            }
+            if (curAst.type === "Identifier") {
+                return {
+                    type: "Identifier",
+                    value: curAst.value
+                };
+            }
+            if (curAst.type === "NumberIdentifier") {
+                return {
+                    type: "NumberIdentifier",
+                    value: curAst.value
+                };
+            }
+        }
+        var newAst = {
+            type: "Program",
+            body: []
+        };
+        // 逐条解析顶层语句
+        while (i < ast.length) {
+            var statement = nextStatement();
+            if (!statement) {
+                break;
+            }
+            newAst.body.push(statement);
+        }
+        return newAst;
+    };
+    AST.prototype.transform = function (ast) {
+        return this.traverser(ast.body);
+    };
     return AST;
 }());
 var ast = new AST();
 var tokenzier = ast.tokenizer("function add(a,b) {\n  return a + b + 1\n}");
-console.log(tokenzier);
 var test = ast.parse(tokenzier);
-console.log(test);
+var newAst = ast.transform(test);
 //# sourceMappingURL=index.js.map
