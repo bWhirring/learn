@@ -3,7 +3,7 @@ var AST = /** @class */ (function () {
         this.WHITESPACE = /s/;
         this.NUMBERS = /[0-9]/;
         this.LETTERS = /[a-z\$\_]/i;
-        this.OPERATOR = "+-*/";
+        this.OPERATOR = "+-*/=";
     }
     AST.prototype.tokenizer = function (input) {
         var _a = this, WHITESPACE = _a.WHITESPACE, NUMBERS = _a.NUMBERS, LETTERS = _a.LETTERS, OPERATOR = _a.OPERATOR;
@@ -105,6 +105,13 @@ var AST = /** @class */ (function () {
                     value: token.value
                 };
             }
+            if (token.type === "string") {
+                current++;
+                return {
+                    type: "StringIdentifier",
+                    value: token.value
+                };
+            }
             if (token.type === "operator") {
                 current++;
                 return {
@@ -175,14 +182,15 @@ var AST = /** @class */ (function () {
     };
     AST.prototype.traverser = function (ast) {
         var i = 0;
-        var curAst = ast[i];
+        var curAst = ast[i] || { type: "eof" };
         function nextStatement() {
+            curAst = ast[i++];
             if (curAst.type === "FunctionStatement") {
                 var statement = {
                     type: "FunctionStatement",
                     body: []
                 };
-                curAst = ast[++i];
+                curAst = ast[i + 1];
                 statement.body.push(nextStatement());
                 return statement;
             }
@@ -193,7 +201,6 @@ var AST = /** @class */ (function () {
                     argument: curAst.params,
                     body: []
                 };
-                curAst = ast[++i];
                 express.body.push(nextStatement());
                 return express;
             }
@@ -203,7 +210,7 @@ var AST = /** @class */ (function () {
                     body: []
                 };
                 while (i < ast.length) {
-                    curAst = ast[++i];
+                    curAst = ast[i + 1];
                     if (curAst.type === "BlockStatement" && curAst.value === "}") {
                         ++i;
                         break;
@@ -224,6 +231,12 @@ var AST = /** @class */ (function () {
                     value: curAst.value
                 };
             }
+            if (curAst.type === "StringIdentifier") {
+                return {
+                    type: "StringIdentifier",
+                    value: curAst.value
+                };
+            }
             if (curAst.type === "NumberIdentifier") {
                 return {
                     type: "NumberIdentifier",
@@ -236,6 +249,7 @@ var AST = /** @class */ (function () {
                     value: curAst.value
                 };
             }
+            curAst = ast[++i];
         }
         var newAst = {
             type: "Program",
@@ -280,7 +294,8 @@ var AST = /** @class */ (function () {
                     node.body.map(generatorCode);
                 case "Identifier":
                 case "NumberIdentifier":
-                    code += node.value || "";
+                case "StringIdentifier":
+                    code += " " + (node.value || "");
                     break;
                 case "Operator":
                     code += " " + node.value + " ";
@@ -293,6 +308,7 @@ var AST = /** @class */ (function () {
 }());
 var ast = new AST();
 var tokenzier = ast.tokenizer("function add(a,b) {\n  return a + b + 1\n}");
+// const tokenzier = ast.tokenizer(`const a = "huhu"`);
 var token = ast.parse(tokenzier);
 var newAst = ast.transform(token);
 var init = ast.generator(newAst);

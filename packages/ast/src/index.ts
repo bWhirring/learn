@@ -17,7 +17,7 @@ class AST {
   private WHITESPACE: RegExp = /s/;
   private NUMBERS: RegExp = /[0-9]/;
   private LETTERS: RegExp = /[a-z\$\_]/i;
-  private OPERATOR: string = "+-*/";
+  private OPERATOR: string = "+-*/=";
 
   tokenizer(input: string) {
     const { WHITESPACE, NUMBERS, LETTERS, OPERATOR } = this;
@@ -125,6 +125,13 @@ class AST {
           value: token.value
         };
       }
+      if (token.type === "string") {
+        current++;
+        return {
+          type: "StringIdentifier",
+          value: token.value
+        };
+      }
       if (token.type === "operator") {
         current++;
         return {
@@ -204,15 +211,16 @@ class AST {
 
   traverser(ast: Inode[]) {
     let i = 0;
-    let curAst = ast[i];
+    let curAst = ast[i] || { type: "eof" };
 
     function nextStatement() {
+      curAst = ast[i++];
       if (curAst.type === "FunctionStatement") {
         const statement = {
           type: "FunctionStatement",
           body: []
         };
-        curAst = ast[++i];
+        curAst = ast[i + 1];
         statement.body.push(nextStatement());
         return statement;
       }
@@ -223,7 +231,7 @@ class AST {
           argument: curAst.params,
           body: []
         };
-        curAst = ast[++i];
+
         express.body.push(nextStatement());
         return express;
       }
@@ -233,7 +241,7 @@ class AST {
           body: []
         };
         while (i < ast.length) {
-          curAst = ast[++i];
+          curAst = ast[i + 1];
           if (curAst.type === "BlockStatement" && curAst.value === "}") {
             ++i;
             break;
@@ -257,6 +265,13 @@ class AST {
         };
       }
 
+      if (curAst.type === "StringIdentifier") {
+        return {
+          type: "StringIdentifier",
+          value: curAst.value
+        };
+      }
+
       if (curAst.type === "NumberIdentifier") {
         return {
           type: "NumberIdentifier",
@@ -270,6 +285,7 @@ class AST {
           value: curAst.value
         };
       }
+      curAst = ast[++i];
     }
 
     const newAst = {
@@ -318,7 +334,8 @@ class AST {
           node.body.map(generatorCode);
         case "Identifier":
         case "NumberIdentifier":
-          code += node.value || "";
+        case "StringIdentifier":
+          code += ` ${node.value || ""}`;
           break;
         case "Operator":
           code += ` ${node.value} `;
@@ -335,7 +352,9 @@ const tokenzier = ast.tokenizer(`function add(a,b) {
   return a + b + 1
 }`);
 
+// const tokenzier = ast.tokenizer(`const a = "huhu"`);
 const token = ast.parse(tokenzier);
+
 const newAst = ast.transform(token);
 
 const init = ast.generator(newAst);
