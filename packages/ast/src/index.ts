@@ -14,7 +14,7 @@ interface Iast {
 }
 
 class AST {
-  private WHITESPACE: RegExp = /s/;
+  private WHITESPACE: RegExp = / /;
   private NUMBERS: RegExp = /[0-9]/;
   private LETTERS: RegExp = /[a-z\$\_]/i;
   private OPERATOR: string = "+-*/=";
@@ -66,7 +66,10 @@ class AST {
         });
       } else if (WHITESPACE.test(char)) {
         current++;
-        continue;
+        tokens.push({
+          type: "whitespace",
+          value: char
+        });
       } else if (NUMBERS.test(char)) {
         let value = "";
         while (NUMBERS.test(char)) {
@@ -122,6 +125,13 @@ class AST {
         current++;
         return {
           type: "NumberIdentifier",
+          value: token.value
+        };
+      }
+      if (token.type === "whitespace") {
+        current++;
+        return {
+          type: "whitespace",
           value: token.value
         };
       }
@@ -264,6 +274,12 @@ class AST {
           value: curAst.value
         };
       }
+      if (curAst.type === "whitespace") {
+        return {
+          type: "whitespace",
+          value: curAst.value
+        };
+      }
 
       if (curAst.type === "StringIdentifier") {
         return {
@@ -335,10 +351,13 @@ class AST {
         case "Identifier":
         case "NumberIdentifier":
         case "StringIdentifier":
-          code += ` ${node.value || ""}`;
+          code += node.value || "";
+          break;
+        case "whitespace":
+          code += " ";
           break;
         case "Operator":
-          code += ` ${node.value} `;
+          code += `${node.value}`;
       }
     }
 
@@ -348,11 +367,11 @@ class AST {
 }
 
 const ast = new AST();
-const tokenzier = ast.tokenizer(`function add(a,b) {
-  return a + b + 1
-}`);
+// const tokenzier = ast.tokenizer(`function add(a,b) {
+//   return a + b + 1
+// }`);
 
-// const tokenzier = ast.tokenizer(`const a = "huhu"`);
+const tokenzier = ast.tokenizer(`const a = "huhu"`);
 const token = ast.parse(tokenzier);
 
 const newAst = ast.transform(token);

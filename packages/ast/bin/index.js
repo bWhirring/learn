@@ -1,6 +1,6 @@
 var AST = /** @class */ (function () {
     function AST() {
-        this.WHITESPACE = /s/;
+        this.WHITESPACE = / /;
         this.NUMBERS = /[0-9]/;
         this.LETTERS = /[a-z\$\_]/i;
         this.OPERATOR = "+-*/=";
@@ -52,7 +52,10 @@ var AST = /** @class */ (function () {
             }
             else if (WHITESPACE.test(char)) {
                 current++;
-                continue;
+                tokens.push({
+                    type: "whitespace",
+                    value: char
+                });
             }
             else if (NUMBERS.test(char)) {
                 var value = "";
@@ -102,6 +105,13 @@ var AST = /** @class */ (function () {
                 current++;
                 return {
                     type: "NumberIdentifier",
+                    value: token.value
+                };
+            }
+            if (token.type === "whitespace") {
+                current++;
+                return {
+                    type: "whitespace",
                     value: token.value
                 };
             }
@@ -231,6 +241,12 @@ var AST = /** @class */ (function () {
                     value: curAst.value
                 };
             }
+            if (curAst.type === "whitespace") {
+                return {
+                    type: "whitespace",
+                    value: curAst.value
+                };
+            }
             if (curAst.type === "StringIdentifier") {
                 return {
                     type: "StringIdentifier",
@@ -295,10 +311,13 @@ var AST = /** @class */ (function () {
                 case "Identifier":
                 case "NumberIdentifier":
                 case "StringIdentifier":
-                    code += " " + (node.value || "");
+                    code += node.value || "";
+                    break;
+                case "whitespace":
+                    code += " ";
                     break;
                 case "Operator":
-                    code += " " + node.value + " ";
+                    code += "" + node.value;
             }
         }
         generatorCode(ast);
@@ -307,8 +326,10 @@ var AST = /** @class */ (function () {
     return AST;
 }());
 var ast = new AST();
-var tokenzier = ast.tokenizer("function add(a,b) {\n  return a + b + 1\n}");
-// const tokenzier = ast.tokenizer(`const a = "huhu"`);
+// const tokenzier = ast.tokenizer(`function add(a,b) {
+//   return a + b + 1
+// }`);
+var tokenzier = ast.tokenizer("const a = \"huhu\"");
 var token = ast.parse(tokenzier);
 var newAst = ast.transform(token);
 var init = ast.generator(newAst);
