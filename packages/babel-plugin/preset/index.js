@@ -1,3 +1,3 @@
-module.export = {
+module.exports = {
   plugins: [require("../plugins/reverse")]
 };
