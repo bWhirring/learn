@@ -4,7 +4,7 @@ const visitor = {
   }
 };
 
-module.exports = () => {
+module.exports = (babel) => {
   return {
     visitor
   };
