@@ -221,6 +221,9 @@ var AST = /** @class */ (function () {
                 };
                 while (i < ast.length) {
                     curAst = ast[i + 1];
+                    if (!curAst) {
+                        break;
+                    }
                     if (curAst.type === "BlockStatement" && curAst.value === "}") {
                         ++i;
                         break;
@@ -296,6 +299,11 @@ var AST = /** @class */ (function () {
                     code += "function ";
                     node.body.map(generatorCode);
                     break;
+                case "ReturnStatement":
+                    code += "{ \n return ";
+                    node.body.map(generatorCode);
+                    code += " \n }";
+                    break;
                 case "CallExpression":
                     code += node.name;
                     var params_1 = [];
@@ -303,11 +311,7 @@ var AST = /** @class */ (function () {
                     code += "(" + params_1.join(", ") + ")";
                     node.body.map(generatorCode);
                     // this.generator(ast);
-                    code += " \n }";
                     break;
-                case "ReturnStatement":
-                    code += "{ \n return ";
-                    node.body.map(generatorCode);
                 case "Identifier":
                 case "NumberIdentifier":
                 case "StringIdentifier":
