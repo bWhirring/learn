@@ -1,9 +1,0 @@
-{
-  "presets": [
-    "./preset/",
-    "./preset/index1"
-  ],
-  "plugins": [
-    "./plugins/index"
-  ]
-}

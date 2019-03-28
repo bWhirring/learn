@@ -36,3 +36,9 @@ babel index.js
 ```
 babel index.js
 ```
+
+arrow transform
+
+```
+npx babel --plugins ./plugins/arrow.js index.js
+```
