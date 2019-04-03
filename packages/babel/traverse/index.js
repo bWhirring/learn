@@ -14,7 +14,7 @@ const Visitor = {
       path.node.name = "x";
     }
   }
-}
+};
 
 traverse(ast, Visitor);
 
