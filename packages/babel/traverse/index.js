@@ -8,13 +8,15 @@ const test = `function square(n) {
 
 const ast = parser.parse(test);
 
-traverse(ast, {
-  enter(path) {
+const Visitor = {
+  Identifier(path) {
     if (path.isIdentifier({ name: "n" })) {
       path.node.name = "x";
     }
   }
-});
+}
+
+traverse(ast, Visitor);
 
 const { code } = generate(ast);
 console.log(code);
