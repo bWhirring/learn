@@ -1,0 +1,17 @@
+{
+  "name": "acorn-demo",
+  "version": "0.0.1",
+  "author": "HUHU",
+  "license": "MIT",
+  "repository": {
+    "type": "nodejs"
+  },
+  "scripts": {
+    "start": "npx tsc"
+  },
+  "dependencies": {
+    "@types/node": "^10.5.2",
+    "acorn": "^6.1.1",
+    "typescript": "^2.9.2"
+  }
+}
