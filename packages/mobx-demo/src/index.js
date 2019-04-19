@@ -1,8 +1,10 @@
 import React from "react";
+import "@babel/polyfill";
 import ReactDOM from "react-dom";
 import { observable, action } from "mobx";
 import { observer } from "mobx-react";
 import DevTools from "mobx-react-devtools";
+import Test from "./test/index";
 
 class AppState {
   @observable count = 1;
@@ -28,6 +30,7 @@ class App extends React.Component {
         <button onClick={appState.add}>add</button>
         <button onClick={appState.minus}>minus</button>
         <span>{appState.count}</span>
+        <Test />
       </React.Fragment>
     );
   }
@@ -35,7 +38,7 @@ class App extends React.Component {
 
 ReactDOM.render(
   <div>
-    <App appState={new AppState()} />
+    <App appState={new AppState(1212)} />
     <DevTools />
   </div>,
   document.getElementById("root")
