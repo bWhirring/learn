@@ -1,18 +1,29 @@
-Function.prototype.apply = function(context, arr) {
-  var context = Object(context) || window;
-  context.fn = this;
+Function.prototype.apply = function(ctx, arr) {
+  ctx = Object(ctx) || window;
+  ctx.fn = this;
 
   var result;
   if (!arr) {
-    result = context.fn();
+    result = ctx.fn();
   } else {
     var args = [];
     for (var i = 0, len = arr.length; i < len; i++) {
       args.push("arr[" + i + "]");
     }
-    result = eval("context.fn(" + args + ")");
+    result = eval("ctx.fn(" + args + ")");
   }
 
-  delete context.fn;
+  delete ctx.fn;
+  return result;
+};
+
+// ES6
+Function.prototype.apply = function(ctx, arr) {
+  ctx = Object(ctx) || window;
+  const fn = Symbol("fn");
+  ctx[fn] = this;
+  const result = ctx[fn](...arr);
+  delete ctx[fn];
+
   return result;
 };
