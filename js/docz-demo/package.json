@@ -1,0 +1,19 @@
+{
+  "name": "docz-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "yarn docz dev"
+  },
+  "keywords": [],
+  "author": "huhu",
+  "license": "ISC",
+  "devDependencies": {
+    "docz": "^1.2.0",
+    "docz-theme-default": "^1.2.0"
+  },
+  "dependencies": {
+    "react": "^16.8.6"
+  }
+}
