@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body>
+    <input id="normal-text" type="text" value="I'm normal text" />
+    <div id="root">
+      <em class="shadowhost_content1">huhu</em>
+      <input id="distributed-text" type="text" value="I'm distributed text" />
+    </div>
+    <template class="template">
+      <style>
+        :host {
+          color: #f00;
+        }
+        :host(:hover) {
+          color: green;
+        }
+        ::content > em {
+          padding: 10px;
+        }
+      </style>
+      <input id="shadow-text" type="text" value="I'm shadow text" />
+      <h1>呼呼<content></content></h1>
+    </template>
+    <script>
+      const shadowHost = document.querySelector('#root');
+      const shadowRoot = shadowHost.createShadowRoot();
+      var template = document.querySelector('.template');
+
+      shadowRoot.appendChild(document.importNode(template.content, true));
+      document.addEventListener('click', function(e) {
+        console.log(e.target.id + ' click!');
+      });
+    </script>
+  </body>
+</html>
