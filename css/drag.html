@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+  div {
+    width: 100px;
+    height: 100px;
+    border: 1px solid #ccc;
+    margin: 0 20px;
+    float: left;
+  }
+  </style>
+  <script>
+  function allowDrop(ev) {
+    ev.preventDefault();
+  }
+
+  function drag(ev) {
+    ev.dataTransfer.setData('tag', ev.target.id)
+  }
+
+  function drop(ev) {
+    ev.preventDefault();
+    const data = ev.dataTransfer.getData('tag');
+    ev.target.appendChild(document.getElementById(data));
+  }
+  </script>
+</head>
+<body>
+  <div ondrop="drop(event)" ondragover="allowDrop(event)">
+    <span draggable="true" ondragstart="drag(event)" id='drag1'>huhu</span>
+  </div>
+  <div ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+</body>
+</html>
