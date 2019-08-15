@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>IntersectionObserver</title>
+    <style>
+      #test {
+        height: 1000px;
+      }
+    </style>
+    <script>
+      window.onload = () => {
+        // entries 是IntersectionObserverEntry 数组对象
+        var io = new IntersectionObserver(
+          entries => {
+            console.log(entries);
+          },
+          {
+            // 指定root元素，用于检测目标的可见性。必须是目标元素的父元素, 如果未指定或者为null，则为浏览器视窗
+            // root: document.querySelector('body'),
+            // root元素的外边距, 类似于margin。如果有指定root元素，亦可使用百分比, 默认为0
+            rootMargin: '0px',
+            // 可以是单一的number也可以是number数组, target元素和root元素相交程度达到该值的时候IntersectionObserve注册的回调函数会执行
+            threshold: [0, 0.25, 0.5, 0.75, 1]
+          }
+        );
+        const huhu = document.querySelector('#huhu');
+        // 开始观察
+        io.observe(huhu);
+        // 停止观察
+        // io.unobserve(huhu);
+        // 关闭观察
+        // io.disconnect()
+      };
+    </script>
+  </head>
+  <body>
+    <div id="test">test</div>
+    <div id="huhu">huhu</div>
+  </body>
+</html>
