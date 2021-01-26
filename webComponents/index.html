@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <user-info name="HUHU" />
+    <template id="userTemplate">
+      <p class="name" />
+      <p class="age">29</p>
+    </template>
+    <script>
+      class UserInfo extends HTMLElement {
+        constructor() {
+          super();
+          let shadow = this.attachShadow({ mode: "closed" });
+          const template = document.getElementById("userTemplate");
+
+          const content = template.content.cloneNode(true);
+          content.querySelector(".name").innerHTML = this.getAttribute("name");
+          shadow.append(content);
+        }
+      }
+      window.customElements.define("user-info", UserInfo);
+    </script>
+  </body>
+</html>
