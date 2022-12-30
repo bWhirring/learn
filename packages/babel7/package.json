@@ -11,20 +11,20 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@babel/core": "^7.1.2",
+    "@babel/core": "^7.20.7",
     "@babel/preset-env": "^7.1.0",
     "@babel/preset-react": "^7.0.0",
     "babel-core": "^7.0.0-bridge.0",
-    "babel-loader": "^8.0.4",
-    "jest": "^23.6.0",
+    "babel-loader": "^8.3.0",
+    "jest": "^29.3.1",
     "react-test-renderer": "^16.5.2",
-    "webpack": "^4.20.2"
+    "webpack": "^5.75.0"
   },
   "dependencies": {
     "@babel/polyfill": "^7.0.0",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
-    "webpack-cli": "^3.1.2",
+    "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^3.1.9"
   },
   "jest": {
